@@ -12,6 +12,7 @@ export class BaseRepository<T extends Document> {
     return this.model.findById(id, option);
   }
 
+
   async findByCondition(
     filter: any, 
     field?: any | null,
