@@ -123,8 +123,27 @@ export class UserService {
 
     return user;
   }
+  async findOneById(id) {
+    try {
+      const userCache = await this.cacheManager.get('profile');
+    const userCacheJson = JSON.parse(JSON.stringify(userCache));
+    if (userCache) {
+      if (userCacheJson.id == id) {
+        return userCache;
+      }
+    }
+    return this.findById(id);
+    } catch (error) {
+      throw new HttpException('cant find', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   async getAllUsers() {
     try {
+      const usersCache = await this.cacheManager.get('allUser');
+      if (usersCache) {
+        return usersCache;
+      }
       const users = await this.userRepository.findAll()
       return users;
     } catch (error) {
