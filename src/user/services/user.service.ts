@@ -2,10 +2,16 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UserRepository } from '../repositories/user.repository';
 import { CreateUserDto, LoginUserDto } from '../dto/user.dto';
 import * as bcrypt from 'bcrypt';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(
+    private readonly userRepository: UserRepository,
+    @InjectQueue('get-all-users')
+    private getAll: Queue,
+  ) {}
 
   async create(userDto: CreateUserDto) {
     userDto.password = await bcrypt.hash(userDto.password, 10);
@@ -17,6 +23,8 @@ export class UserService {
     if (userInDb) {
       throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
     }
+    
+
 
     return await this.userRepository.create(userDto);
   }
@@ -25,6 +33,7 @@ export class UserService {
     const user = await this.userRepository.findByCondition({
       email: email,
     });
+    const users = await this.userRepository.findAll()
 
     if (!user) {
       throw new HttpException('User not found', HttpStatus.UNAUTHORIZED);
@@ -35,7 +44,9 @@ export class UserService {
     if (!is_equal) {
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
-
+    await this.getAll.add({
+      users: users
+    })
     return user;
   }
 
@@ -71,6 +82,18 @@ export class UserService {
 
     return user;
   }
+  async getAllUsers() {
+    try {
+      const users = await this.userRepository.findAll()
+      await this.getAll.add({
+        users: users
+      })
+      return users;
+    } catch (error) {
+      throw new HttpException('Unable to fetch users', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+  
 
   private reverse(s) {
     return s.split('').reverse().join('');

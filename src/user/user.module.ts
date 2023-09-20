@@ -10,10 +10,14 @@ import { UserRepository } from './repositories/user.repository';
 import { JwtStrategy } from './jwt.strategy';
 import { UserController } from './controllers/user.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { BullModule } from '@nestjs/bull';
+import { UserConsumer } from './consumers/users.consumer';
 
-// @Global()
+
+@Global()
 @Module({
   imports: [
+    ConfigModule.forRoot(),
     MongooseModule.forFeature([
       {
         name: 'User',
@@ -35,9 +39,21 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       }),
       inject: [ConfigService],
     }),
+    BullModule.registerQueue({
+      name: 'get-all-users',
+    }),
   ],
-  controllers: [AuthController, UserController],
-  providers: [UserService, AuthService, UserRepository, JwtStrategy],
-  exports: [UserService],
+  controllers: [
+    AuthController,
+    UserController
+  ],
+  providers: [
+    UserService,
+    AuthService,
+    UserRepository,
+    JwtStrategy,
+    UserConsumer
+  ],
+  exports: [UserService, AuthService],
 })
 export class UserModule {}
