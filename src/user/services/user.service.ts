@@ -4,6 +4,8 @@ import { CreateUserDto, LoginUserDto } from '../dto/user.dto';
 import * as bcrypt from 'bcrypt';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { Cache } from 'cache-manager';
+import { Inject, CACHE_MANAGER } from '@nestjs/common';
 
 @Injectable()
 export class UserService {
@@ -11,6 +13,7 @@ export class UserService {
     private readonly userRepository: UserRepository,
     @InjectQueue('get-all-users')
     private getAll: Queue,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) { }
 
   async create(userDto: CreateUserDto) {
@@ -20,6 +23,22 @@ export class UserService {
     const userInDb = await this.userRepository.findByCondition({
       email: userDto.email,
     });
+
+
+    // del + update cache
+
+    const users = await this.userRepository.findAll()
+    await this.getAll.add(
+      'register',
+      {
+        users: users,
+      },
+      {
+        removeOnComplete: true,
+      },
+    );
+
+
     if (userInDb) {
       throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
     }
@@ -31,16 +50,22 @@ export class UserService {
     const user = await this.userRepository.findByCondition({
       email: email,
     });
-    const users = await this.userRepository.findAll()
-    await this.getAll.add(
-      'login',
-      {
-        users: users,
-      },
-      {
-        removeOnComplete: true,
-      },
-    );
+
+    await this.cacheManager.set('profile', user, 200);
+    const userCache = await this.cacheManager.get('allUser');
+    if (!userCache) {
+      const users = await this.userRepository.findAll()
+      await this.getAll.add(
+        'register',
+        {
+          users: users,
+        },
+        {
+          removeOnComplete: true,
+        },
+      );
+    }
+
     if (!user) {
       throw new HttpException('User not found', HttpStatus.UNAUTHORIZED);
     }
@@ -59,10 +84,12 @@ export class UserService {
     });
   }
 
-  async findById(id: any) {
+  async findById(id: number) {
     // Check if the provided ID is a valid positive integer
 
-    const user = await this.userRepository.findById(id);
+    const user = await this.userRepository.findByCondition({
+      id: id,
+    });
 
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);

@@ -13,6 +13,7 @@ export class UserController {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) { }
 
+  @HasRoles(Role.ADMIN)
   @UseGuards(AuthGuard())
   @Get("profile")
   async getProfile(@Req() req: any) {
@@ -25,6 +26,10 @@ export class UserController {
   @Get("/getAll")
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getAllUser(@Req() req: any) {
+    const usersCache = await this.cacheManager.get('allUser');
+    if (usersCache) {
+      return usersCache;
+    }
     return this.userService.getAllUsers();
   }
 
@@ -45,9 +50,18 @@ export class UserController {
   // async findOne(@Param('id', ParseIntPipe) id: number) {
   // return this.userService.findById(id);
 
-  @Get(':uuid')
-  async findOne(@Param('uuid', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE })) uuid: number) {
-    return this.userService.findById(uuid);
+  @HasRoles(Role.ADMIN)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Get(':id')
+  async findOne(@Param('id') id: number) {
+    const userCache = await this.cacheManager.get('profile');
+    const userCacheJson = JSON.parse(JSON.stringify(userCache));
+    if (userCache) {
+      if (userCacheJson.id == id) {
+        return userCache;
+      }
+    }
+    return this.userService.findById(id);
   }
 }
 
