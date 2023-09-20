@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <h1>Socket checker</h1>
+  <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+
+  <script>
+    var socket = io.connect('http://localhost:3000', {
+      extraHeaders: {
+        Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IjJAZ21haWwuY29tIiwiaXNTZWNvbmRGYWN0b3JBdXRoZW50aWNhdGVkIjpmYWxzZSwiaWF0IjoxNjk1MTg0OTI1LCJleHAiOjE2OTUxODU2NDV9.6QQJhxe7kLIM9Te2qxoh71gep2uB36s_-FlRqEeTiBI"
+      }
+    });
+    socket.on('connect', function () {
+      console.log('Connected');
+
+      socket.emit('message', {message: "test socket"})
+    });
+
+    socket.on('disconnect', function () {
+      console.log('Disconnected');
+    });
+
+    socket.on('message', (data) => {
+      console.log('message', data);
+    })
+
+  </script>
+</body>
+</html>

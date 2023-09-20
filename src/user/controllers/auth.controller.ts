@@ -28,6 +28,7 @@ export class AuthController {
     await this.authService.logout(req.user);
     return {
       statusCode: 200,
+      message: "logout successfully"
     };
   }
 }
