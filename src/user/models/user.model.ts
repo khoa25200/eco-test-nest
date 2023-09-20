@@ -2,11 +2,12 @@ import { Schema, Document } from 'mongoose';
 
 const UserSchema = new Schema(
   {
+    id: Number,
     name: String,
     email: String,
     password: String,
     refreshToken: String,
-
+    roles: String,
   },
   {
     collection: 'users',
@@ -27,8 +28,10 @@ UserSchema.virtual('posts', {
 export { UserSchema };
 
 export interface User extends Document {
+  id:number;
   name: string;
   email: string;
   password: string;
   refreshToken: string;
+  roles: String;
 }

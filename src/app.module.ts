@@ -7,6 +7,8 @@ import { AppController } from "./app.controller";
 import { BullModule } from "@nestjs/bull";
 import { EventGateway } from "./event.gateway";
 import { UserModule } from "./user/user.module";
+import { APP_GUARD } from "@nestjs/core";
+
 
 
 @Module({
@@ -29,7 +31,8 @@ import { UserModule } from "./user/user.module";
   ],
   controllers: [AppController],
   providers: [AppService,
-    EventGateway,
+    EventGateway
   ],
+
 })
 export class AppModule {}

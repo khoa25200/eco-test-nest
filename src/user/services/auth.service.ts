@@ -17,6 +17,8 @@ export class AuthService {
     const user = await this.userService.create(userDto);
     const token = await this._createToken(user);
     return {
+      id: user.id,
+      role: user.role,
       email: user.email,
       ...token,
     };

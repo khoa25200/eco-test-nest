@@ -11,6 +11,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { AuthService } from './user/services/auth.service';
 
+
 @WebSocketGateway({ cors: true })
 export class EventGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
@@ -32,7 +33,7 @@ export class EventGateway
   async handleMessage(@ConnectedSocket() socket: Socket, @MessageBody() data) {
     console.log('message', data, socket.id);
     setTimeout(() => {
-      this.server.to(socket.data.email + '1').emit('message', data);
+      this.server.to(socket.data).emit('message', data);
     }, 1000);
   }
 
