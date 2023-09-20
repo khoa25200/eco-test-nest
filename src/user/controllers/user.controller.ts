@@ -23,7 +23,6 @@ export class UserController {
   @HasRoles(Role.ADMIN)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Get("/getAll")
-  @UseGuards(AuthGuard())
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getAllUser(@Req() req: any) {
     return this.userService.getAllUsers();
