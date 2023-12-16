@@ -5,7 +5,8 @@ import * as bcrypt from 'bcrypt';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { Cache } from 'cache-manager';
-import { Inject, CACHE_MANAGER } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
+// import { Inject, CACHE_MANAGER } from '@nestjs/common';
 
 @Injectable()
 export class UserService {
@@ -13,7 +14,7 @@ export class UserService {
     private readonly userRepository: UserRepository,
     @InjectQueue('get-all-users')
     private getAll: Queue,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    // @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) { }
 
   async create(userDto: CreateUserDto) {
@@ -51,20 +52,20 @@ export class UserService {
       email: email,
     });
 
-    await this.cacheManager.set('profile', user, 200);
-    const userCache = await this.cacheManager.get('allUser');
-    if (!userCache) {
-      const users = await this.userRepository.findAll()
-      await this.getAll.add(
-        'register',
-        {
-          users: users,
-        },
-        {
-          removeOnComplete: true,
-        },
-      );
-    }
+    // await this.cacheManager.set('profile', user, 200);
+    // const userCache = await this.cacheManager.get('allUser');
+    // if (!userCache) {
+    //   const users = await this.userRepository.findAll()
+    //   await this.getAll.add(
+    //     'register',
+    //     {
+    //       users: users,
+    //     },
+    //     {
+    //       removeOnComplete: true,
+    //     },
+    //   );
+    // }
 
     if (!user) {
       throw new HttpException('User not found', HttpStatus.UNAUTHORIZED);
@@ -125,13 +126,13 @@ export class UserService {
   }
   async findOneById(id) {
     try {
-      const userCache = await this.cacheManager.get('profile');
-    const userCacheJson = JSON.parse(JSON.stringify(userCache));
-    if (userCache) {
-      if (userCacheJson.id == id) {
-        return userCache;
-      }
-    }
+      // const userCache = await this.cacheManager.get('profile');
+    // const userCacheJson = JSON.parse(JSON.stringify(userCache));
+    // if (userCache) {
+    //   if (userCacheJson.id == id) {
+    //     return userCache;
+    //   }
+    // }
     return this.findById(id);
     } catch (error) {
       throw new HttpException('cant find', HttpStatus.INTERNAL_SERVER_ERROR);
@@ -140,10 +141,10 @@ export class UserService {
 
   async getAllUsers() {
     try {
-      const usersCache = await this.cacheManager.get('allUser');
-      if (usersCache) {
-        return usersCache;
-      }
+      // const usersCache = await this.cacheManager.get('allUser');
+      // if (usersCache) {
+      //   return usersCache;
+      // }
       const users = await this.userRepository.findAll()
       return users;
     } catch (error) {
