@@ -8,6 +8,7 @@ import { BullModule } from "@nestjs/bull";
 import { EventGateway } from "./event.gateway";
 import { UserModule } from "./user/user.module";
 import { APP_GUARD } from "@nestjs/core";
+import { DishModule } from "./user/dish.module";
 
 
 
@@ -16,6 +17,7 @@ import { APP_GUARD } from "@nestjs/core";
     ConfigModule.forRoot(),
     MongooseModule.forRoot(process.env.MONGODB_URL),
     UserModule,
+    DishModule,
     BullModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (config: ConfigService) => ({

@@ -36,6 +36,4 @@ export class TimerService {
       Logger.error(err.message, '', 'Timer sendToTelegram Err');
     }
   }
-
-
 }
