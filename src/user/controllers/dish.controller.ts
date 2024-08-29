@@ -10,7 +10,9 @@ export class DishController {
 
   @Get('')
   async dishes() {
-    return console.log('Dishesh');
+    return {
+      data: 'ok'
+    };
   }
 
   @Post('')
